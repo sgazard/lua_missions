@@ -2,7 +2,7 @@ local agent = require 'lib.agent'
 
 local mission_names = {
   'asserts',
-  'variables',
+  'variables'	,
   'numbers',
   'strings',
   'patterns',
