@@ -7,10 +7,11 @@ function test_basic_error_and_pcall()
   end
   local status, message = pcall(problematic_func)
 
-  assert_equal(__, value)
-  assert_equal(__, status)
+  -- equal to two because of the error stopping things
+  assert_equal(2, value)
+  assert_equal(false, status)
   -- the message includes file info, so it'll vary depending on the platform
-  assert_equal(__, message)
+  assert_equal("errors.lua:5: this is an error message", message)
 end
 
 function test_pcall_returns_true_followed_by_return_values_when_no_errors_are_raised()
@@ -19,9 +20,9 @@ function test_pcall_returns_true_followed_by_return_values_when_no_errors_are_ra
   end
   local status, x, y = pcall(noproblemo)
 
-  assert_equal(__, status)
-  assert_equal(__, x)
-  assert_equal(__, y)
+  assert_equal(true, status)
+  assert_equal('foo', x)
+  assert_equal('bar', y)
 end
 
 function test_pcall_can_pass_parameters_to_invoked_function()
@@ -30,36 +31,42 @@ function test_pcall_can_pass_parameters_to_invoked_function()
   end
   local status, result = pcall(sum, 10, 20)
 
-  assert_equal(__, status)
-  assert_equal(__, result)
+  assert_equal(true, status)
+  assert_equal(30, result)
 end
 
 function test_pcall_works_ok_on_anonymous_functions()
+  -- note that the function .... end syntax is being used
   local status, message = pcall(function() error('hi!') end)
-  assert_equal(__, status)
-  assert_equal(__, message)
+  assert_equal(false, status)
+  assert_equal('errors.lua:40: hi!', message)
 end
 
 function test_pcall_works_ok_on_error_itself()
   local status, message = pcall(error, 'Hello')
-  assert_equal(__, status)
-  assert_equal(__, message)
+  assert_equal(false, status)
+-- expected the below.  on Mac, this seems to remove the file and line number automatically
+--  assert_equal('errors.lua:45: Hello', message)
+  
+  -- actual error message
+  assert_equal('Hello', message)
 end
 
 function test_error_removes_file_info_if_second_param_is_0()
   local _, message = pcall(error, 'World', 0)
-  assert_equal(__, message)
+  -- this happens already in the above function
+  assert_equal('World', message)
 end
 
 function test_error_returning_non_strings_converts_to_string_but_supresses_file_info()
   local _, message = pcall(error, 404)
-  assert_equal(__, message)
+  assert_equal('404', message)
   -- not only numbers and strings are possible. You can returns tables, functions, etc too.
 end
 
 function test_assert_is_defined_by_lua()
   local status, message = pcall(function() assert(false, "This is an error") end)
-  assert_equal(__, status)
-  assert_equal(__, message)
+  assert_equal(false, status)
+  assert_equal("errors.lua:68: This is an error", message)
   -- exercise left out to the reader: figure out how assert might be implemented
 end
